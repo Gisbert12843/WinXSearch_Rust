@@ -10,6 +10,9 @@ use std::{fmt::Error, fs::OpenOptions};
 
 use std::ffi::OsStr;
 use std::os::windows::ffi::OsStrExt;
+use winapi::um::combaseapi::CoInitializeEx;
+use winapi::um::errhandlingapi::GetLastError;
+use winapi::um::objbase::COINIT_APARTMENTTHREADED;
 use windows::{
     Win32::Foundation::PWSTR,
     Win32::UI::Shell::{ILCreateFromPathW, ILFree, SHOpenFolderAndSelectItems},
@@ -25,6 +28,10 @@ pub fn browse_to_file(filename: &str)
         .collect();
 
     unsafe {
+        let result = CoInitializeEx(std::ptr::null_mut(), COINIT_APARTMENTTHREADED);
+        // println!("CoInitializeEx() result: {}", result);/*  */
+        // println!("HRESULT: {}", GetLastError());
+
         let pidl = ILCreateFromPathW(PWSTR(wide.as_ptr() as *mut u16));
         if !pidl.is_null()
         {
@@ -87,8 +94,6 @@ pub fn wait_for_user_continue()
 
 pub fn clear_screen()
 {
-    // println!("\x1B[2J\x1B[1;1H");
-    // crossterm::execute!(std::io::stdout(), Clear(ClearType::All)).unwrap();
     clearscreen::clear().unwrap();
 }
 
