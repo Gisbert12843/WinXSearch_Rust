@@ -144,7 +144,7 @@ pub fn display_results(
 
     println!("\n\n");
 
-    let mut to_be_opened: Vec<String> = Vec::new();
+    let mut to_be_opened: Vec<u64> = Vec::new();
 
     //Collect user input for which files to open, if files were found
     if !(vec_content_path.is_empty() && vec_file_path.is_empty() && vec_folder_path.is_empty())
@@ -171,7 +171,7 @@ pub fn display_results(
                     {
                         if num <= i
                         {
-                            to_be_opened.push(part.to_string())
+                            to_be_opened.push(part.to_string().parse::<u64>().unwrap())
                         }
                     }
 
@@ -197,52 +197,61 @@ pub fn display_results(
         }
     }
 
-    println!("Opening Files/Folders/Content...");
-    println!("vec_to_be_opened size: {}", to_be_opened.len());
-
-    for it in 0..to_be_opened.len() as u64
+    #[cfg(debug_assertions)]
     {
-        println!("{} >= {}", vec_folder_path.len(), it);
-        println!(
-            "{} >= {}",
-            vec_file_path.len() as u64 + vec_folder_path.len() as u64,
-            it
-        );
-        println!(
-            "{} >= {}",
-            vec_content_path.len() as u64
-                + vec_file_path.len() as u64
-                + vec_folder_path.len() as u64,
-            it
-        );
+        println!("Opening Files/Folders/Content...");
+        println!("vec_to_be_opened size: {}", to_be_opened.len());
+    }
+
+    for it in to_be_opened
+    {
+        #[cfg(debug_assertions)]
+        {
+            println!("{} >= {}", vec_folder_path.len(), it);
+            println!(
+                "{} >= {}",
+                vec_file_path.len() as u64 + vec_folder_path.len() as u64,
+                it
+            );
+            println!(
+                "{} >= {}",
+                vec_content_path.len() as u64
+                    + vec_file_path.len() as u64
+                    + vec_folder_path.len() as u64,
+                it
+            );
+        }
 
         if vec_folder_path.len() as u64 >= it
         {
+            let local_index: usize = (it as u64 - 1) as usize;
+
+            #[cfg(debug_assertions)]
             println!(
                 "Opening Folder: {}",
                 vec_folder_path[(it - 1) as usize].path().display()
             );
-            let x = &vec_folder_path[(it - 1) as usize];
-            // println!("{:?}", x);
-            let askdjasd = format!("{}\\\\", x.path().display());
-            let y = askdjasd.as_str();
-            Command::new("cmd").arg("/C").arg(y).status().unwrap();
-            // helper_functions::browse_to_file(
-            //     &vec_folder_path[(it - 1) as usize]
-            //         .path()
-            //         .display()
-            //         .to_string()
-            //         .as_str(),
-            // );
+
+            helper_functions::browse_to_file(
+                &vec_folder_path[local_index]
+                    .path()
+                    .display()
+                    .to_string()
+                    .as_str(),
+            );
         }
         else if (vec_file_path.len() as u64 + vec_folder_path.len() as u64) >= it
         {
+            let local_index: usize = (it - vec_folder_path.len() as u64 - 1) as usize;
+
+            #[cfg(debug_assertions)]
             println!(
                 "Opening File: {}",
-                vec_file_path[(it - 1) as usize].path().display()
+                vec_file_path[local_index].path().to_str().unwrap()
             );
+
             helper_functions::browse_to_file(
-                &vec_file_path[(it - 1) as usize]
+                &vec_file_path[local_index]
                     .path()
                     .display()
                     .to_string()
@@ -254,12 +263,15 @@ pub fn display_results(
             + vec_folder_path.len() as u64)
             >= it
         {
+            let local_index: usize =
+                (it - vec_folder_path.len() as u64 - vec_file_path.len() as u64 - 1) as usize;
+
             println!(
                 "Opening Content: {}",
-                vec_content_path[(it - 1) as usize].path().display()
+                vec_content_path[local_index].path().display()
             );
             helper_functions::browse_to_file(
-                &vec_content_path[(it - 1) as usize]
+                &vec_content_path[local_index]
                     .path()
                     .display()
                     .to_string()

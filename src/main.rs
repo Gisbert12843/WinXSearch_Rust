@@ -11,6 +11,8 @@ mod helper_functions;
 fn main()
 {
     let main_args: Vec<String> = env::args().collect();
+
+    #[cfg(debug_assertions)]
     dbg!(&main_args);
 
     let mut search_folders = false; //option for user to search for folders too
@@ -47,13 +49,20 @@ fn main()
         vec_searchvalue.push(line);
     }
 
-    let search_path = main_args[1].to_string();
+    let search_path: String;
 
-    // let search_path = "C:\\Users\\Kai\\Sciebo\\Projects".to_string();
-    // let search_path = "C:\\Users\\Kai\\Sciebo\\Projects\\WinXSearch".to_string();
+    #[cfg(not(debug_assertions))]
+    {
+        search_path = main_args[1].to_string();
+    }
 
-    // search_folders = true;
-    // search_content = true;
+    #[cfg(debug_assertions)]
+    {
+        search_path = "C:\\Users\\Kai\\Sciebo\\Projects".to_string();
+        // let search_path = "C:\\Users\\Kai\\Sciebo\\Projects\\WinXSearch".to_string();
+        search_folders = true;
+        search_content = true;
+    }
 
     start_win_x_search(search_path, search_folders, search_content, vec_searchvalue);
     helper_functions::wait_for_user_continue();
